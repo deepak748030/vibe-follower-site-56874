@@ -11,6 +11,7 @@ import Steps from "@/components/Steps";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import SMMFAQ from "@/components/SMM-FAQ";
 import Reviews from "@/components/Reviews";
+import Footer from "@/components/Footer";
 
 const Auth = () => {
     const navigate = useNavigate();
@@ -194,6 +195,7 @@ const Auth = () => {
                 <WhyChooseUs />
                 <Reviews />
                 <SMMFAQ />
+                <Footer />
             </div>
         </div>
     );

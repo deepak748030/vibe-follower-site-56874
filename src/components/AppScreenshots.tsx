@@ -57,7 +57,7 @@ const AppScreenshots = () => {
             >
               <div className="relative mb-8">
                 {/* Phone Mockup */}
-                <div className="relative w-full max-w-[500px] mx-auto">
+                <div className="relative w-full max-w-[300px] mx-auto">
                   <div className="relative bg-gradient-to-br from-primary to-accent rounded-[2.5rem] p-2.5 shadow-glow transform transition-all duration-500 group-hover:scale-105 group-hover:shadow-[0_0_60px_rgba(168,85,247,0.6)]">
                     <div className="bg-card rounded-[2rem] overflow-hidden">
                       {/* Notch */}
@@ -66,11 +66,11 @@ const AppScreenshots = () => {
                       </div>
 
                       {/* Screen Content */}
-                      <div className="overflow-hidden">
+                      <div className="overflow-hidden max-h-[520px]">
                         <img
                           src={screenshot.image}
                           alt={screenshot.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-top"
                         />
                       </div>
                     </div>

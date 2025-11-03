@@ -21,7 +21,7 @@ const Footer = () => {
               <div className="w-10 h-10 rounded-2xl gradient-primary flex items-center justify-center shadow-glow">
                 <Heart className="w-6 h-6 text-white fill-current" />
               </div>
-              <span className="text-2xl font-bold text-gradient">Top Follow</span>
+              <span className="text-2xl font-bold text-gradient">Grow Social Life</span>
             </a>
             <p className="text-muted-foreground mb-4">
               Upgrade your Instagram account with Top Follow. Get real followers, likes, and comments instantly.

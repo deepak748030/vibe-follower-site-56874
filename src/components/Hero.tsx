@@ -68,20 +68,20 @@ const Hero = () => {
           <div className="relative flex justify-center lg:justify-end animate-scale-in">
             <div className="relative animate-float">
               {/* Phone Frame */}
-              <div className="relative w-[280px] sm:w-[320px] lg:w-[380px]">
+              <div className="relative w-[200px] sm:w-[240px] lg:w-[280px]">
                 <div className="relative bg-gradient-to-br from-primary to-accent rounded-[3rem] p-3 shadow-glow">
                   <div className="bg-card rounded-[2.5rem] overflow-hidden">
                     {/* Notch */}
-                    <div className="h-8 gradient-primary flex items-center justify-center">
-                      <div className="w-24 h-6 bg-card/20 rounded-full" />
+                    <div className="h-6 gradient-primary flex items-center justify-center">
+                      <div className="w-20 h-5 bg-card/20 rounded-full" />
                     </div>
 
                     {/* Screen Content */}
-                    <div className="overflow-hidden">
+                    <div className="overflow-hidden max-h-[520px]">
                       <img
                         src={appHomeScreen}
                         alt="Grow Social Life App Home Screen"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-top"
                       />
                     </div>
                   </div>

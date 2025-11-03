@@ -25,7 +25,7 @@ const Auth = () => {
         setTimeout(() => {
             toast.success("Welcome back! Redirecting...");
             setIsLoading(false);
-            setTimeout(() => navigate("/"), 1000);
+            setTimeout(() => navigate("/dashboard/new-order"), 1000);
         }, 1500);
     };
 
@@ -37,7 +37,7 @@ const Auth = () => {
         setTimeout(() => {
             toast.success("Account created successfully! Redirecting...");
             setIsLoading(false);
-            setTimeout(() => navigate("/"), 1000);
+            setTimeout(() => navigate("/dashboard/new-order"), 1000);
         }, 1500);
     };
 

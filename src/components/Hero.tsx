@@ -1,5 +1,6 @@
 import { Download, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import appHomeScreen from "@/assets/app-home.png";
 
 const Hero = () => {
   return (
@@ -14,13 +15,7 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-8 animate-fade-in">
-            <div className="inline-block">
-              <span className="text-sm font-semibold gradient-primary text-white px-4 py-2 rounded-full shadow-glow">
-                🎉 Original Version Available
-              </span>
-            </div>
-
-            <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               <span className="text-gradient">Grow Social Life</span>
               <br />
               <span className="text-foreground">Elevate Your</span>
@@ -28,14 +23,14 @@ const Hero = () => {
               <span className="text-foreground">Instagram Presence</span>
             </h1>
 
-            <p className="text-xl text-muted-foreground max-w-lg">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-lg">
               Transform your Instagram account with Grow Social Life. Get real followers, likes, and comments instantly. Your journey to social media success starts here.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                className="gradient-primary shadow-glow hover:scale-105 transition-all rounded-full text-lg px-8 py-6"
+                className="gradient-primary shadow-glow hover:scale-105 transition-all rounded-full text-base md:text-lg px-6 md:px-8 py-5 md:py-6"
               >
                 <Download className="w-5 h-5 mr-2" />
                 Download Apk File
@@ -43,27 +38,28 @@ const Hero = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full text-lg px-8 py-6 border-2 hover:bg-primary/10"
+                className="rounded-full text-base md:text-lg px-6 md:px-8 py-5 md:py-6 border-2 hover:bg-primary/10"
+                onClick={() => window.location.href = '/auth'}
               >
                 <Smartphone className="w-5 h-5 mr-2" />
-                Learn More
+                Login / Signup
               </Button>
             </div>
 
-            <div className="flex items-center gap-8 pt-4">
+            <div className="flex items-center gap-6 md:gap-8 pt-4">
               <div>
-                <div className="text-3xl font-bold text-gradient">5M+</div>
-                <div className="text-sm text-muted-foreground">Downloads</div>
+                <div className="text-2xl md:text-3xl font-bold text-gradient">5M+</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Downloads</div>
               </div>
-              <div className="w-px h-12 bg-border" />
+              <div className="w-px h-10 md:h-12 bg-border" />
               <div>
-                <div className="text-3xl font-bold text-gradient">4.8★</div>
-                <div className="text-sm text-muted-foreground">Rating</div>
+                <div className="text-2xl md:text-3xl font-bold text-gradient">4.8★</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Rating</div>
               </div>
-              <div className="w-px h-12 bg-border" />
+              <div className="w-px h-10 md:h-12 bg-border" />
               <div>
-                <div className="text-3xl font-bold text-gradient">100%</div>
-                <div className="text-sm text-muted-foreground">Safe</div>
+                <div className="text-2xl md:text-3xl font-bold text-gradient">100%</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Safe</div>
               </div>
             </div>
           </div>
@@ -81,64 +77,12 @@ const Hero = () => {
                     </div>
 
                     {/* Screen Content */}
-                    <div className="gradient-primary p-6 min-h-[500px] flex flex-col items-center justify-center text-center">
-                      <div className="space-y-6 w-full">
-                        <div className="bg-card rounded-2xl p-4 shadow-lg">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Request Story Views</span>
-                            <div className="w-6 h-6 rounded-full bg-primary/20" />
-                          </div>
-                        </div>
-
-                        <div className="bg-card rounded-2xl p-4 shadow-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                              <span className="text-white text-lg">🎁</span>
-                            </div>
-                            <span className="text-sm font-medium">Daily bonus</span>
-                          </div>
-                        </div>
-
-                        <div className="bg-card rounded-2xl p-4 shadow-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
-                              <span className="text-white text-lg">🎫</span>
-                            </div>
-                            <span className="text-sm font-medium">Codes</span>
-                          </div>
-                        </div>
-
-                        <div className="bg-card rounded-2xl p-4 shadow-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-                              <span className="text-white text-lg">🎟️</span>
-                            </div>
-                            <span className="text-sm font-medium">Coupons</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Nav */}
-                    <div className="gradient-primary p-4">
-                      <div className="grid grid-cols-4 gap-2 text-white text-xs">
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="w-6 h-6 rounded-lg bg-white/20" />
-                          <span>More</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="w-6 h-6 rounded-lg bg-white/20" />
-                          <span>Followers</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="w-6 h-6 rounded-lg bg-white/20" />
-                          <span>Posts</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="w-6 h-6 rounded-lg bg-white/20" />
-                          <span>Tasks</span>
-                        </div>
-                      </div>
+                    <div className="overflow-hidden">
+                      <img
+                        src={appHomeScreen}
+                        alt="Grow Social Life App Home Screen"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                 </div>

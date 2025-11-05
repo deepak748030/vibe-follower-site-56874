@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,24 +12,50 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { referralsAPI } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ReferEarn = () => {
-    const referralLink = "https://cheapestsmmpanels.com/ref/oSxje";
-    const commissionRate = "3%";
-    const minimumPayout = "₹10.00";
-
-    const stats = {
+    const { user } = useAuth();
+    const [stats, setStats] = useState<any>({
         visits: 0,
         registrations: 0,
         referrals: 0,
         conversionRate: "0.00%",
         totalEarnings: "₹0.00",
         availableEarnings: "₹0.00",
-    };
+    });
 
-    const payouts = [
-        // Empty for now - would be populated from backend
-    ];
+    const referralLink = user?.referralCode
+        ? `${window.location.origin}/auth?ref=${user.referralCode}`
+        : "";
+    const commissionRate = "3%";
+    const minimumPayout = "₹10.00";
+
+    const payouts: any[] = [];
+
+    useEffect(() => {
+        if (user?.referralCode) {
+            fetchStats();
+        }
+    }, [user]);
+
+    const fetchStats = async () => {
+        try {
+            const response = await referralsAPI.getStats();
+            const data = response.data;
+            setStats({
+                visits: data.visits || 0,
+                registrations: data.registrations || 0,
+                referrals: data.referrals || 0,
+                conversionRate: data.conversionRate || "0.00%",
+                totalEarnings: `₹${(data.totalEarnings || 0).toFixed(2)}`,
+                availableEarnings: `₹${(data.availableEarnings || 0).toFixed(2)}`,
+            });
+        } catch (error: any) {
+            console.error("Failed to fetch referral stats:", error);
+        }
+    };
 
     const handleCopyLink = () => {
         navigator.clipboard.writeText(referralLink);
@@ -47,13 +73,14 @@ const ReferEarn = () => {
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Referral link</h3>
                         <div className="flex items-center space-x-2">
                             <code className="flex-1 text-sm bg-muted/50 p-2 rounded truncate">
-                                {referralLink}
+                                {referralLink || "Generate API key to get referral link"}
                             </code>
                             <Button
                                 size="icon"
                                 variant="ghost"
                                 onClick={handleCopyLink}
                                 className="shrink-0"
+                                disabled={!referralLink}
                             >
                                 <Copy className="w-4 h-4" />
                             </Button>

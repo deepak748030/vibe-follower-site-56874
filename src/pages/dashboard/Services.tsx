@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,42 +11,35 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
+import { servicesAPI } from "@/lib/api";
+import { toast } from "sonner";
 
 const Services = () => {
     const [searchQuery, setSearchQuery] = useState("");
+    const [services, setServices] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock services data
-    const services = [
-        {
-            id: 1,
-            name: "Instagram Followers - High Quality",
-            category: "Instagram",
-            rate: "₹45.00",
-            min: 100,
-            max: 100000,
-        },
-        {
-            id: 2,
-            name: "Facebook Page Likes - Real",
-            category: "Facebook",
-            rate: "₹40.00",
-            min: 100,
-            max: 50000,
-        },
-        {
-            id: 3,
-            name: "YouTube Views - Instant",
-            category: "YouTube",
-            rate: "₹35.00",
-            min: 1000,
-            max: 1000000,
-        },
-    ];
+    useEffect(() => {
+        fetchServices();
+    }, []);
+
+    const fetchServices = async () => {
+        setLoading(true);
+        try {
+            const response = await servicesAPI.getAll();
+            setServices(response.data);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to fetch services");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredServices = services.filter(
         (service) =>
             service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            service.category.toLowerCase().includes(searchQuery.toLowerCase())
+            service.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            service.serviceId.toString().includes(searchQuery)
     );
 
     return (
@@ -76,26 +69,42 @@ const Services = () => {
                                     <TableHead>ID</TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Category</TableHead>
+                                    <TableHead>Type</TableHead>
                                     <TableHead>Rate/1000</TableHead>
                                     <TableHead>Min Order</TableHead>
                                     <TableHead>Max Order</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredServices.map((service) => (
-                                    <TableRow key={service.id}>
-                                        <TableCell className="font-medium">{service.id}</TableCell>
-                                        <TableCell>{service.name}</TableCell>
-                                        <TableCell>
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                                {service.category}
-                                            </span>
+                                {loading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-12">
+                                            Loading services...
                                         </TableCell>
-                                        <TableCell className="font-semibold">{service.rate}</TableCell>
-                                        <TableCell>{service.min.toLocaleString()}</TableCell>
-                                        <TableCell>{service.max.toLocaleString()}</TableCell>
                                     </TableRow>
-                                ))}
+                                ) : filteredServices.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                                            No services found
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredServices.map((service) => (
+                                        <TableRow key={service._id}>
+                                            <TableCell className="font-medium">{service.serviceId}</TableCell>
+                                            <TableCell>{service.name}</TableCell>
+                                            <TableCell>
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary capitalize">
+                                                    {service.category}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="capitalize">{service.type}</TableCell>
+                                            <TableCell className="font-semibold">₹{service.rate}</TableCell>
+                                            <TableCell>{service.min.toLocaleString()}</TableCell>
+                                            <TableCell>{service.max.toLocaleString()}</TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
                             </TableBody>
                         </Table>
                     </div>

@@ -1,13 +1,31 @@
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy } from "lucide-react";
+import { Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { usersAPI } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const API = () => {
-    const apiKey = "your-api-key-here";
-    const apiUrl = "https://cheapestsmmpanels.com/api/v2";
+    const { user, refreshUser } = useAuth();
+    const [generating, setGenerating] = useState(false);
+    const apiKey = user?.apiKey || "Generate your API key below";
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000' + "/api/v2";
+
+    const handleGenerateApiKey = async () => {
+        setGenerating(true);
+        try {
+            await usersAPI.generateApiKey();
+            toast.success("API key generated successfully!");
+            await refreshUser();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to generate API key");
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -309,17 +327,32 @@ while ((output = br.readLine()) != null) {
                     <Card className="p-6">
                         <h3 className="font-semibold mb-2 text-muted-foreground text-sm">API Key</h3>
                         <div className="flex items-center space-x-2">
-                            <code className="flex-1 bg-muted/50 p-3 rounded text-sm font-mono">
-                                Get an API key on the Account page
+                            <code className="flex-1 bg-muted/50 p-3 rounded text-sm font-mono truncate">
+                                {apiKey}
                             </code>
                             <Button
                                 size="icon"
                                 variant="ghost"
                                 onClick={() => handleCopy(apiKey)}
+                                disabled={!user?.apiKey}
                             >
                                 <Copy className="w-4 h-4" />
                             </Button>
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={handleGenerateApiKey}
+                                disabled={generating}
+                                title={user?.apiKey ? "Regenerate API Key" : "Generate API Key"}
+                            >
+                                <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
+                            </Button>
                         </div>
+                        {!user?.apiKey && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                                Click the refresh icon to generate your API key
+                            </p>
+                        )}
                     </Card>
                 </div>
 

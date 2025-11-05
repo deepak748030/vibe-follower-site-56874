@@ -5,18 +5,40 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { ordersAPI } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MassOrder = () => {
+    const { refreshUser } = useAuth();
     const [orders, setOrders] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!orders.trim()) {
             toast.error("Please enter at least one order");
             return;
         }
-        toast.success("Mass orders submitted successfully!");
-        setOrders("");
+
+        setLoading(true);
+        try {
+            const response = await ordersAPI.massCreate({ orders });
+            const { created, failed } = response.data;
+
+            if (created.length > 0) {
+                toast.success(`Successfully created ${created.length} order(s)`);
+            }
+            if (failed.length > 0) {
+                toast.error(`Failed to create ${failed.length} order(s)`);
+            }
+
+            setOrders("");
+            await refreshUser();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to submit mass orders");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -46,8 +68,9 @@ const MassOrder = () => {
                         <Button
                             type="submit"
                             className="w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold h-12"
+                            disabled={loading}
                         >
-                            Submit
+                            {loading ? "Submitting..." : "Submit"}
                         </Button>
                     </form>
                 </Card>

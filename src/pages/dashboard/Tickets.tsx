@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,25 +30,61 @@ import {
 } from "@/components/ui/table";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { ticketsAPI } from "@/lib/api";
+import { format } from "date-fns";
 
 const Tickets = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [subject, setSubject] = useState("");
     const [category, setCategory] = useState("");
     const [message, setMessage] = useState("");
+    const [priority, setPriority] = useState("medium");
+    const [tickets, setTickets] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    // Mock tickets data
-    const tickets = [
-        // Empty for now - would be populated from backend
-    ];
+    useEffect(() => {
+        fetchTickets();
+    }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const fetchTickets = async () => {
+        try {
+            const response = await ticketsAPI.getAll();
+            setTickets(response.data);
+        } catch (error: any) {
+            console.error("Failed to fetch tickets:", error);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        toast.success("Support ticket created successfully!");
-        setIsDialogOpen(false);
-        setSubject("");
-        setCategory("");
-        setMessage("");
+        setLoading(true);
+        try {
+            await ticketsAPI.create({
+                subject,
+                category,
+                message,
+                priority
+            });
+            toast.success("Support ticket created successfully!");
+            setIsDialogOpen(false);
+            setSubject("");
+            setCategory("");
+            setMessage("");
+            setPriority("medium");
+            await fetchTickets();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to create ticket");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        const statusLower = status.toLowerCase();
+        if (statusLower === "closed") return "bg-green-500/10 text-green-500";
+        if (statusLower === "open") return "bg-blue-500/10 text-blue-500";
+        if (statusLower === "pending") return "bg-yellow-500/10 text-yellow-500";
+        return "bg-gray-500/10 text-gray-500";
     };
 
     return (
@@ -97,6 +133,19 @@ const Tickets = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
+                                    <Label htmlFor="priority">Priority</Label>
+                                    <Select value={priority} onValueChange={setPriority}>
+                                        <SelectTrigger id="priority">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="low">Low</SelectItem>
+                                            <SelectItem value="medium">Medium</SelectItem>
+                                            <SelectItem value="high">High</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
                                     <Label htmlFor="message">Message</Label>
                                     <Textarea
                                         id="message"
@@ -107,8 +156,8 @@ const Tickets = () => {
                                         required
                                     />
                                 </div>
-                                <Button type="submit" className="w-full gradient-primary">
-                                    Submit Ticket
+                                <Button type="submit" className="w-full gradient-primary" disabled={loading}>
+                                    {loading ? "Creating..." : "Submit Ticket"}
                                 </Button>
                             </form>
                         </DialogContent>
@@ -137,17 +186,17 @@ const Tickets = () => {
                                     </TableRow>
                                 ) : (
                                     tickets.map((ticket: any) => (
-                                        <TableRow key={ticket.id}>
-                                            <TableCell className="font-medium">#{ticket.id}</TableCell>
+                                        <TableRow key={ticket._id}>
+                                            <TableCell className="font-medium">#{ticket.ticketId}</TableCell>
                                             <TableCell>{ticket.subject}</TableCell>
-                                            <TableCell>{ticket.category}</TableCell>
+                                            <TableCell className="capitalize">{ticket.category.replace('-', ' ')}</TableCell>
                                             <TableCell>
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium`}>
+                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(ticket.status)}`}>
                                                     {ticket.status}
                                                 </span>
                                             </TableCell>
-                                            <TableCell>{ticket.created}</TableCell>
-                                            <TableCell>{ticket.updated}</TableCell>
+                                            <TableCell>{format(new Date(ticket.createdAt), 'MMM dd, yyyy')}</TableCell>
+                                            <TableCell>{format(new Date(ticket.lastUpdated), 'MMM dd, yyyy')}</TableCell>
                                         </TableRow>
                                     ))
                                 )}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,15 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
+import { ordersAPI } from "@/lib/api";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 const DashboardOrders = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("all");
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const filters = [
         { id: "all", label: "All" },
@@ -27,10 +32,37 @@ const DashboardOrders = () => {
         { id: "canceled", label: "Canceled" },
     ];
 
-    // Mock orders data
-    const orders = [
-        // Empty for now - would be populated from backend
-    ];
+    useEffect(() => {
+        fetchOrders();
+    }, [activeFilter]);
+
+    const fetchOrders = async () => {
+        setLoading(true);
+        try {
+            const response = await ordersAPI.getAll(
+                activeFilter !== "all" ? { status: activeFilter } : undefined
+            );
+            setOrders(response.data);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to fetch orders");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredOrders = orders.filter((order) =>
+        order.orderId.toString().includes(searchQuery) ||
+        order.link.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const getStatusColor = (status: string) => {
+        const statusLower = status.toLowerCase();
+        if (statusLower === "completed") return "bg-green-500/10 text-green-500";
+        if (statusLower === "pending") return "bg-yellow-500/10 text-yellow-500";
+        if (statusLower === "in-progress" || statusLower === "processing") return "bg-blue-500/10 text-blue-500";
+        if (statusLower === "partial") return "bg-orange-500/10 text-orange-500";
+        return "bg-red-500/10 text-red-500";
+    };
 
     return (
         <DashboardLayout>
@@ -91,39 +123,36 @@ const DashboardOrders = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {orders.length === 0 ? (
+                                {loading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="text-center py-12">
+                                            Loading orders...
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredOrders.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={9} className="text-center text-muted-foreground py-12">
                                             No orders found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    orders.map((order: any) => (
-                                        <TableRow key={order.id}>
-                                            <TableCell className="font-medium">{order.id}</TableCell>
-                                            <TableCell>{order.date}</TableCell>
+                                    filteredOrders.map((order) => (
+                                        <TableRow key={order._id}>
+                                            <TableCell className="font-medium">{order.orderId}</TableCell>
+                                            <TableCell>{format(new Date(order.createdAt), 'MMM dd, yyyy')}</TableCell>
                                             <TableCell className="max-w-[200px] truncate">
                                                 {order.link}
                                             </TableCell>
-                                            <TableCell>₹{order.charge}</TableCell>
-                                            <TableCell>{order.startCount}</TableCell>
+                                            <TableCell>₹{order.charge?.toFixed(2)}</TableCell>
+                                            <TableCell>{order.startCount || 0}</TableCell>
                                             <TableCell>{order.quantity}</TableCell>
-                                            <TableCell>{order.service}</TableCell>
+                                            <TableCell>{order.service?.name || order.serviceId}</TableCell>
                                             <TableCell>
-                                                <span
-                                                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${order.status === "Completed"
-                                                            ? "bg-green-500/10 text-green-500"
-                                                            : order.status === "Pending"
-                                                                ? "bg-yellow-500/10 text-yellow-500"
-                                                                : order.status === "In progress"
-                                                                    ? "bg-blue-500/10 text-blue-500"
-                                                                    : "bg-red-500/10 text-red-500"
-                                                        }`}
-                                                >
+                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                                                     {order.status}
                                                 </span>
                                             </TableCell>
-                                            <TableCell>{order.remains}</TableCell>
+                                            <TableCell>{order.remains || 0}</TableCell>
                                         </TableRow>
                                     ))
                                 )}

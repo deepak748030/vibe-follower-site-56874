@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Mail, Lock, User, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import Steps from "@/components/Steps";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import SMMFAQ from "@/components/SMM-FAQ";
@@ -15,30 +15,43 @@ import Footer from "@/components/Footer";
 
 const Auth = () => {
     const navigate = useNavigate();
+    const { login, register } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
 
-        // Simulate login
-        setTimeout(() => {
-            toast.success("Welcome back! Redirecting...");
+        try {
+            await login(email, password);
+            navigate("/dashboard/home");
+        } catch (error) {
+            // Error handled in context
+        } finally {
             setIsLoading(false);
-            setTimeout(() => navigate("/dashboard/new-order"), 1000);
-        }, 1500);
+        }
     };
 
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
+        const formData = new FormData(e.currentTarget);
+        const name = formData.get("name") as string;
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+        const referralCode = formData.get("referralCode") as string;
 
-        // Simulate signup
-        setTimeout(() => {
-            toast.success("Account created successfully! Redirecting...");
+        try {
+            await register(name, email, password, referralCode || undefined);
+            navigate("/dashboard/home");
+        } catch (error) {
+            // Error handled in context
+        } finally {
             setIsLoading(false);
-            setTimeout(() => navigate("/dashboard/new-order"), 1000);
-        }, 1500);
+        }
     };
 
     return (
@@ -92,6 +105,7 @@ const Auth = () => {
                                             <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                             <Input
                                                 id="login-email"
+                                                name="email"
                                                 type="email"
                                                 placeholder="your@email.com"
                                                 className="pl-12 h-14 text-base border-2 focus:border-primary transition-all"
@@ -108,6 +122,7 @@ const Auth = () => {
                                             <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                             <Input
                                                 id="login-password"
+                                                name="password"
                                                 type="password"
                                                 placeholder="••••••••"
                                                 className="pl-12 h-14 text-base border-2 focus:border-primary transition-all"
@@ -133,6 +148,7 @@ const Auth = () => {
                                             <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                             <Input
                                                 id="signup-name"
+                                                name="name"
                                                 type="text"
                                                 placeholder="John Doe"
                                                 className="pl-12 h-14 text-base border-2 focus:border-primary transition-all"
@@ -146,6 +162,7 @@ const Auth = () => {
                                             <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                             <Input
                                                 id="signup-email"
+                                                name="email"
                                                 type="email"
                                                 placeholder="your@email.com"
                                                 className="pl-12 h-14 text-base border-2 focus:border-primary transition-all"
@@ -159,12 +176,24 @@ const Auth = () => {
                                             <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                             <Input
                                                 id="signup-password"
+                                                name="password"
                                                 type="password"
                                                 placeholder="Min. 8 characters"
                                                 className="pl-12 h-14 text-base border-2 focus:border-primary transition-all"
                                                 required
+                                                minLength={8}
                                             />
                                         </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label htmlFor="referral-code" className="text-base font-medium">Referral Code (Optional)</Label>
+                                        <Input
+                                            id="referral-code"
+                                            name="referralCode"
+                                            type="text"
+                                            placeholder="Enter referral code"
+                                            className="h-14 text-base border-2 focus:border-primary transition-all"
+                                        />
                                     </div>
                                     <Button
                                         type="submit"

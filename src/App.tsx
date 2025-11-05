@@ -16,7 +16,7 @@ import Tickets from "./pages/dashboard/Tickets";
 import API from "./pages/dashboard/API";
 import ChildPanel from "./pages/dashboard/ChildPanel";
 import Updates from "./pages/dashboard/Updates";
-
+import Home from "./pages/dashboard/Home";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -30,6 +30,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
 
           {/* Dashboard Routes */}
+          <Route path="/dashboard" element={<Home />} />
           <Route path="/dashboard/new-order" element={<NewOrder />} />
           <Route path="/dashboard/orders" element={<DashboardOrders />} />
           <Route path="/dashboard/add-funds" element={<AddFunds />} />

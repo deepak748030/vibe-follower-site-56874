@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -20,21 +20,57 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { paymentsAPI } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
 
 const AddFunds = () => {
+    const { refreshUser } = useAuth();
     const [paymentMethod, setPaymentMethod] = useState("upi");
     const [amount, setAmount] = useState("");
     const [phone, setPhone] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [transactions, setTransactions] = useState<any[]>([]);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        toast.success("Payment request initiated. Please complete the payment.");
+    useEffect(() => {
+        fetchTransactions();
+    }, []);
+
+    const fetchTransactions = async () => {
+        try {
+            const response = await paymentsAPI.getTransactions();
+            setTransactions(response.data);
+        } catch (error: any) {
+            console.error("Failed to fetch transactions:", error);
+        }
     };
 
-    // Mock transaction history
-    const transactions = [
-        // Empty for now - would be populated from backend
-    ];
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!amount || parseFloat(amount) < 10) {
+            toast.error("Minimum amount is ₹10");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await paymentsAPI.addFunds({
+                amount: parseFloat(amount),
+                method: paymentMethod,
+                phone
+            });
+            toast.success("Payment request initiated. Please complete the payment.");
+            setAmount("");
+            setPhone("");
+            await refreshUser();
+            await fetchTransactions();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to initiate payment");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <DashboardLayout>
@@ -104,8 +140,9 @@ const AddFunds = () => {
                         <Button
                             type="submit"
                             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold h-12"
+                            disabled={loading}
                         >
-                            Pay
+                            {loading ? "Processing..." : "Pay"}
                         </Button>
                     </form>
                 </Card>
@@ -132,11 +169,11 @@ const AddFunds = () => {
                                     </TableRow>
                                 ) : (
                                     transactions.map((transaction: any) => (
-                                        <TableRow key={transaction.id}>
-                                            <TableCell>{transaction.id}</TableCell>
-                                            <TableCell>{transaction.date}</TableCell>
-                                            <TableCell>{transaction.method}</TableCell>
-                                            <TableCell className="text-right">₹{transaction.amount}</TableCell>
+                                        <TableRow key={transaction._id}>
+                                            <TableCell>{transaction.transactionId || transaction._id}</TableCell>
+                                            <TableCell>{format(new Date(transaction.createdAt), 'MMM dd, yyyy')}</TableCell>
+                                            <TableCell className="capitalize">{transaction.method}</TableCell>
+                                            <TableCell className="text-right">₹{transaction.amount.toFixed(2)}</TableCell>
                                         </TableRow>
                                     ))
                                 )}

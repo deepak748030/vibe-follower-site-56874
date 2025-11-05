@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -11,18 +11,74 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { servicesAPI, ordersAPI } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const NewOrder = () => {
+    const { user, refreshUser } = useAuth();
     const [category, setCategory] = useState("");
     const [service, setService] = useState("");
     const [link, setLink] = useState("");
     const [quantity, setQuantity] = useState("");
+    const [services, setServices] = useState<any[]>([]);
+    const [selectedService, setSelectedService] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [loadingServices, setLoadingServices] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        fetchServices();
+    }, [category]);
+
+    useEffect(() => {
+        if (service && services.length > 0) {
+            const found = services.find(s => s._id === service);
+            setSelectedService(found);
+        }
+    }, [service, services]);
+
+    const fetchServices = async () => {
+        setLoadingServices(true);
+        try {
+            const response = await servicesAPI.getAll(category ? { category } : undefined);
+            setServices(response.data);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to fetch services");
+        } finally {
+            setLoadingServices(false);
+        }
+    };
+
+    const calculateCharge = () => {
+        if (!selectedService || !quantity) return 0;
+        const qty = parseInt(quantity);
+        return ((selectedService.rate / 1000) * qty).toFixed(2);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        toast.success("Order placed successfully!");
+
+        if (!service || !link || !quantity) {
+            toast.error("Please fill all fields");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await ordersAPI.create({
+                service,
+                link,
+                quantity: parseInt(quantity)
+            });
+            toast.success("Order placed successfully!");
+            setLink("");
+            setQuantity("");
+            await refreshUser();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to place order");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -42,25 +98,28 @@ const NewOrder = () => {
                                             <SelectValue placeholder="Select category" />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <SelectItem value="">All Categories</SelectItem>
                                             <SelectItem value="instagram">Instagram</SelectItem>
                                             <SelectItem value="facebook">Facebook</SelectItem>
                                             <SelectItem value="youtube">YouTube</SelectItem>
                                             <SelectItem value="twitter">Twitter</SelectItem>
+                                            <SelectItem value="tiktok">TikTok</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="service">Service</Label>
-                                    <Select value={service} onValueChange={setService}>
+                                    <Select value={service} onValueChange={setService} disabled={loadingServices}>
                                         <SelectTrigger id="service">
-                                            <SelectValue placeholder="Select service" />
+                                            <SelectValue placeholder={loadingServices ? "Loading services..." : "Select service"} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="followers">Followers</SelectItem>
-                                            <SelectItem value="likes">Likes</SelectItem>
-                                            <SelectItem value="views">Views</SelectItem>
-                                            <SelectItem value="comments">Comments</SelectItem>
+                                            {services.map((s) => (
+                                                <SelectItem key={s._id} value={s._id}>
+                                                    {s.name} - ₹{s.rate}/1k
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -84,21 +143,29 @@ const NewOrder = () => {
                                         placeholder="Enter quantity"
                                         value={quantity}
                                         onChange={(e) => setQuantity(e.target.value)}
+                                        min={selectedService?.min || 0}
+                                        max={selectedService?.max || 10000}
                                     />
-                                    <p className="text-xs text-muted-foreground">
-                                        Min: 100 - Max: 10,000
-                                    </p>
+                                    {selectedService && (
+                                        <p className="text-xs text-muted-foreground">
+                                            Min: {selectedService.min} - Max: {selectedService.max}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="bg-muted/50 p-4 rounded-lg space-y-2">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">Charge:</span>
-                                        <span className="font-semibold">₹0.00</span>
+                                        <span className="font-semibold">₹{calculateCharge()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Your Balance:</span>
+                                        <span className="font-semibold">₹{user?.balance?.toFixed(2) || '0.00'}</span>
                                     </div>
                                 </div>
 
-                                <Button type="submit" className="w-full gradient-primary">
-                                    Submit Order
+                                <Button type="submit" className="w-full gradient-primary" disabled={loading}>
+                                    {loading ? "Placing Order..." : "Submit Order"}
                                 </Button>
                             </form>
                         </Card>
@@ -106,23 +173,30 @@ const NewOrder = () => {
 
                     {/* Service Info Sidebar */}
                     <div className="space-y-6">
-                        <Card className="p-6">
-                            <h3 className="font-semibold mb-4">Service Information</h3>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Rate per 1000:</span>
-                                    <span className="font-semibold">₹50.00</span>
+                        {selectedService && (
+                            <Card className="p-6">
+                                <h3 className="font-semibold mb-4">Service Information</h3>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Rate per 1000:</span>
+                                        <span className="font-semibold">₹{selectedService.rate}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Min order:</span>
+                                        <span className="font-semibold">{selectedService.min}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Max order:</span>
+                                        <span className="font-semibold">{selectedService.max}</span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Min order:</span>
-                                    <span className="font-semibold">100</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Max order:</span>
-                                    <span className="font-semibold">10,000</span>
-                                </div>
-                            </div>
-                        </Card>
+                                {selectedService.description && (
+                                    <div className="mt-4 pt-4 border-t">
+                                        <p className="text-xs text-muted-foreground">{selectedService.description}</p>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
 
                         <Card className="p-6 bg-primary/5 border-primary/20">
                             <h3 className="font-semibold mb-2 text-primary">Quick Tip</h3>

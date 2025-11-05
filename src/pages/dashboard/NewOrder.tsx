@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const NewOrder = () => {
     const { user, refreshUser } = useAuth();
-    const [category, setCategory] = useState("");
+    const [category, setCategory] = useState("all");
     const [service, setService] = useState("");
     const [link, setLink] = useState("");
     const [quantity, setQuantity] = useState("");
@@ -40,7 +40,7 @@ const NewOrder = () => {
     const fetchServices = async () => {
         setLoadingServices(true);
         try {
-            const response = await servicesAPI.getAll(category ? { category } : undefined);
+            const response = await servicesAPI.getAll(category && category !== 'all' ? { category } : undefined);
             setServices(response.data);
         } catch (error: any) {
             toast.error(error.message || "Failed to fetch services");
@@ -98,7 +98,7 @@ const NewOrder = () => {
                                             <SelectValue placeholder="Select category" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All Categories</SelectItem>
+                                            <SelectItem value="all">All Categories</SelectItem>
                                             <SelectItem value="instagram">Instagram</SelectItem>
                                             <SelectItem value="facebook">Facebook</SelectItem>
                                             <SelectItem value="youtube">YouTube</SelectItem>

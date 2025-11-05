@@ -46,13 +46,13 @@ async function apiCall<T>(
 // Auth APIs
 export const authAPI = {
     register: (data: { name: string; email: string; password: string; referralCode?: string }) =>
-        apiCall<{ success: boolean; data: { token: string; user: any } }>('/api/auth/register', {
+        apiCall<{ success: boolean; token: string; user: any }>('/api/auth/register', {
             method: 'POST',
             body: JSON.stringify(data),
         }),
 
     login: (data: { email: string; password: string }) =>
-        apiCall<{ success: boolean; data: { token: string; user: any } }>('/api/auth/login', {
+        apiCall<{ success: boolean; token: string; user: any }>('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify(data),
         }),
@@ -65,26 +65,40 @@ export const servicesAPI = {
         if (params?.category) queryParams.append('category', params.category);
         if (params?.search) queryParams.append('search', params.search);
         const query = queryParams.toString();
-        return apiCall<{ success: boolean; data: any[] }>(`/api/services${query ? `?${query}` : ''}`);
+        return apiCall<any>(`/api/services${query ? `?${query}` : ''}`).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.services ?? [],
+        }));
     },
 
     getById: (id: string) =>
-        apiCall<{ success: boolean; data: any }>(`/api/services/${id}`),
+        apiCall<any>(`/api/services/${id}`).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.service ?? body,
+        })),
 };
 
 // Orders APIs
 export const ordersAPI = {
     create: (data: { service: string; link: string; quantity: number }) =>
-        apiCall<{ success: boolean; data: any; message: string }>('/api/orders', {
+        apiCall<any>('/api/orders', {
             method: 'POST',
             body: JSON.stringify(data),
-        }),
+        }).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.order ?? body,
+            message: body?.message ?? 'Order created',
+        })),
 
     massCreate: (data: { orders: string }) =>
-        apiCall<{ success: boolean; data: { created: any[]; failed: any[] }; message: string }>('/api/orders/mass', {
+        apiCall<any>('/api/orders/mass', {
             method: 'POST',
             body: JSON.stringify(data),
-        }),
+        }).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? { created: body?.created ?? [], failed: body?.failed ?? [] },
+            message: body?.message ?? 'Mass order processed',
+        })),
 
     getAll: (params?: { status?: string; page?: number; limit?: number }) => {
         const queryParams = new URLSearchParams();
@@ -92,54 +106,94 @@ export const ordersAPI = {
         if (params?.page) queryParams.append('page', params.page.toString());
         if (params?.limit) queryParams.append('limit', params.limit.toString());
         const query = queryParams.toString();
-        return apiCall<{ success: boolean; data: any[]; pagination?: any }>(`/api/orders${query ? `?${query}` : ''}`);
+        return apiCall<any>(`/api/orders${query ? `?${query}` : ''}`).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.orders ?? [],
+            pagination: body?.pagination ?? {
+                totalPages: body?.totalPages,
+                currentPage: body?.currentPage,
+                total: body?.total,
+            },
+        }));
     },
 
     getById: (id: string) =>
-        apiCall<{ success: boolean; data: any }>(`/api/orders/${id}`),
+        apiCall<any>(`/api/orders/${id}`).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.order ?? body,
+        })),
 };
 
 // Payments APIs
 export const paymentsAPI = {
     addFunds: (data: { amount: number; method: string; phone: string }) =>
-        apiCall<{ success: boolean; data: any; message: string }>('/api/payments/add-funds', {
+        apiCall<any>('/api/payments/add-funds', {
             method: 'POST',
             body: JSON.stringify(data),
-        }),
+        }).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body,
+            message: body?.message ?? 'Payment initiated',
+        })),
 
     getTransactions: () =>
-        apiCall<{ success: boolean; data: any[] }>('/api/payments/transactions'),
+        apiCall<any>('/api/payments/transactions').then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.transactions ?? [],
+            pagination: body?.pagination ?? {
+                totalPages: body?.totalPages,
+                currentPage: body?.currentPage,
+                total: body?.total,
+            },
+        })),
 };
 
 // Tickets APIs
 export const ticketsAPI = {
     create: (data: { subject: string; category: string; message: string; priority?: string }) =>
-        apiCall<{ success: boolean; data: any; message: string }>('/api/tickets', {
+        apiCall<any>('/api/tickets', {
             method: 'POST',
             body: JSON.stringify(data),
-        }),
+        }).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.ticket ?? body,
+            message: body?.message ?? 'Ticket created',
+        })),
 
     getAll: (params?: { status?: string }) => {
         const queryParams = new URLSearchParams();
         if (params?.status) queryParams.append('status', params.status);
         const query = queryParams.toString();
-        return apiCall<{ success: boolean; data: any[] }>(`/api/tickets${query ? `?${query}` : ''}`);
+        return apiCall<any>(`/api/tickets${query ? `?${query}` : ''}`).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.tickets ?? [],
+        }));
     },
 
     getById: (id: string) =>
-        apiCall<{ success: boolean; data: any }>(`/api/tickets/${id}`),
+        apiCall<any>(`/api/tickets/${id}`).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.ticket ?? body,
+        })),
 
     addReply: (id: string, data: { message: string }) =>
-        apiCall<{ success: boolean; data: any; message: string }>(`/api/tickets/${id}/reply`, {
+        apiCall<any>(`/api/tickets/${id}/reply`, {
             method: 'POST',
             body: JSON.stringify(data),
-        }),
+        }).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body,
+            message: body?.message ?? 'Reply added',
+        })),
 };
 
 // Referrals APIs
 export const referralsAPI = {
     getStats: () =>
-        apiCall<{ success: boolean; data: any }>('/api/referrals/stats'),
+        apiCall<any>('/api/referrals/stats').then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.stats ?? body,
+        })),
 
     trackVisit: (code: string) =>
         apiCall<{ success: boolean }>(`/api/referrals/track/${code}`, {
@@ -150,24 +204,38 @@ export const referralsAPI = {
 // Users APIs
 export const usersAPI = {
     getProfile: () =>
-        apiCall<{ success: boolean; data: any }>('/api/users/profile'),
+        apiCall<any>('/api/users/profile').then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.user ?? body,
+        })),
 
     updateProfile: (data: { name?: string; email?: string; password?: string }) =>
-        apiCall<{ success: boolean; data: any; message: string }>('/api/users/profile', {
+        apiCall<any>('/api/users/profile', {
             method: 'PUT',
             body: JSON.stringify(data),
-        }),
+        }).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.user ?? body,
+            message: body?.message ?? 'Profile updated',
+        })),
 
     generateApiKey: () =>
-        apiCall<{ success: boolean; data: { apiKey: string }; message: string }>('/api/users/api-key', {
+        apiCall<any>('/api/users/api-key', {
             method: 'POST',
-        }),
+        }).then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? { apiKey: body?.apiKey },
+            message: body?.message ?? 'API key generated',
+        })),
 };
 
 // Updates APIs
 export const updatesAPI = {
     getAll: () =>
-        apiCall<{ success: boolean; data: any[] }>('/api/updates'),
+        apiCall<any>('/api/updates').then((body) => ({
+            success: body?.success ?? true,
+            data: body?.data ?? body?.updates ?? [],
+        })),
 };
 
 // API Key endpoint (external integration)

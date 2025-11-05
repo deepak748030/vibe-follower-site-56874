@@ -35,15 +35,24 @@ const Hero = () => {
                 <Download className="w-5 h-5 mr-2" />
                 Download Apk File
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full text-base md:text-lg px-6 md:px-8 py-5 md:py-6 border-2 hover:bg-primary/10"
-                onClick={() => window.location.href = '/auth'}
+              <a
+                href="/auth"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex"
               >
-                <Smartphone className="w-5 h-5 mr-2" />
-                Login / Signup
-              </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full rounded-full text-base md:text-lg px-6 md:px-8 py-5 md:py-6 border-2 hover:bg-primary/10"
+                  asChild
+                >
+                  <span>
+                    <Smartphone className="w-5 h-5 mr-2" />
+                    Login / Signup
+                  </span>
+                </Button>
+              </a>
             </div>
 
             <div className="flex items-center gap-6 md:gap-8 pt-4">

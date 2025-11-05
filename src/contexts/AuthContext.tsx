@@ -57,8 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (email: string, password: string) => {
         try {
             const response = await authAPI.login({ email, password });
-            localStorage.setItem('token', response.data.token);
-            setUser(response.data.user);
+            localStorage.setItem('token', response.token);
+            setUser(response.user);
             toast.success('Login successful!');
         } catch (error: any) {
             toast.error(error.message || 'Login failed');
@@ -69,8 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const register = async (name: string, email: string, password: string, referralCode?: string) => {
         try {
             const response = await authAPI.register({ name, email, password, referralCode });
-            localStorage.setItem('token', response.data.token);
-            setUser(response.data.user);
+            localStorage.setItem('token', response.token);
+            setUser(response.user);
             toast.success('Registration successful!');
         } catch (error: any) {
             toast.error(error.message || 'Registration failed');

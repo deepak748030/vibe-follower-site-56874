@@ -115,7 +115,7 @@ const NewOrder = () => {
                                             <SelectValue placeholder={loadingServices ? "Loading services..." : "Select service"} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {services.map((s) => (
+                                            {services && services.map((s) => (
                                                 <SelectItem key={s._id} value={s._id}>
                                                     {s.name} - ₹{s.rate}/1k
                                                 </SelectItem>

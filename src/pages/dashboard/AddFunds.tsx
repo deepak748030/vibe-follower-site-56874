@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Wallet } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -163,8 +164,12 @@ const AddFunds = () => {
                             <TableBody>
                                 {transactions.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                                            No transactions yet
+                                        <TableCell colSpan={4} className="text-center py-12">
+                                            <div className="flex flex-col items-center space-y-2">
+                                                <Wallet className="w-12 h-12 text-muted-foreground" />
+                                                <p className="text-muted-foreground">No transactions yet</p>
+                                                <p className="text-xs text-muted-foreground">Your payment history will appear here</p>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (

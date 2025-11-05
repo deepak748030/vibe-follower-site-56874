@@ -27,7 +27,7 @@ const Auth = () => {
 
         try {
             await login(email, password);
-            navigate("/dashboard/home");
+            navigate("/dashboard");
         } catch (error) {
             // Error handled in context
         } finally {
@@ -46,7 +46,7 @@ const Auth = () => {
 
         try {
             await register(name, email, password, referralCode || undefined);
-            navigate("/dashboard/home");
+            navigate("/dashboard");
         } catch (error) {
             // Error handled in context
         } finally {
